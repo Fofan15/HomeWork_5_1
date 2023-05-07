@@ -10,7 +10,5 @@ namespace CodeHomeWork_5_1.Services.Abstractions
     public interface ILogingService
     {
         Task<LoginResponse> LoginUser(string email, string password);
-
-        Task<string> RegisterUserMissPassword(string email);
     }
 }

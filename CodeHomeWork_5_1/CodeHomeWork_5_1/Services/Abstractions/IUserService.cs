@@ -10,7 +10,7 @@ namespace CodeHomeWork_5_1.Services.Abstractions
 {
     public interface IUserService
     {
-        Task<UsersListResponse> GetUsersList();
+        Task<PageResponse<UserDto>> GetUsersList();
 
         Task<UserDto> GetUserById(int id);
 

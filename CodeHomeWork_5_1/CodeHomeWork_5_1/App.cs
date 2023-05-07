@@ -36,9 +36,9 @@ namespace CodeHomeWork_5_1
             var userUpdatePatch = await _userService.UpdateUserPatch(2, "morpheus", "zion resident");
             var userDelete = await _userService.DeleteUser(2);
             var register = await _registerService.RegisterUser("eve.holt@reqres.in", "pistol");
-            var registerError = await _registerService.RegisterUserMissPassword("sydney@fife");
+            var registerError = await _registerService.RegisterUser("sydney@fife", null);
             var login = await _loginService.LoginUser("eve.holt@reqres.in", "cityslicka");
-            var loginError = await _loginService.RegisterUserMissPassword("peter@klaven");
+            var loginError = await _loginService.LoginUser("peter@klaven", null);
 
             Console.WriteLine(JsonConvert.SerializeObject(userList));
             Console.WriteLine(JsonConvert.SerializeObject(singleUser));

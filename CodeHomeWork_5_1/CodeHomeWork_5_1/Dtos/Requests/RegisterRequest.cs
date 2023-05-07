@@ -9,6 +9,10 @@ namespace CodeHomeWork_5_1.Dtos.Requests
 {
     public class RegisterRequest
     {
-        public FormUrlEncodedContent EncodedContent { get; set; }
+        [JsonProperty("email")]
+        public string Email { get; set; }
+
+        [JsonProperty("password")]
+        public string Password { get; set; }
     }
 }

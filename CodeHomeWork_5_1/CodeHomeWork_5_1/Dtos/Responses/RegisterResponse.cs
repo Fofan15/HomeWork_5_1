@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CodeHomeWork_5_1.Dtos.Responses
 {
-    public class RegisterResponse
+    public class RegisterResponse : ErrorResponse
     {
         [JsonProperty("id")]
         public int Id { get; set; }

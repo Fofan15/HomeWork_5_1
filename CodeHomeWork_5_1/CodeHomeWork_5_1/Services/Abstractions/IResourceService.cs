@@ -12,6 +12,6 @@ namespace CodeHomeWork_5_1.Services.Abstractions
     {
         Task<ResourceDto> GetResourceById(int id);
 
-        Task<ResourceListResponse> GetResourceList();
+        Task<PageResponse<ResourceDto>> GetResourceList();
     }
 }

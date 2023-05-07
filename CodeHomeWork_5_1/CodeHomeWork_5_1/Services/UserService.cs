@@ -29,31 +29,16 @@ namespace CodeHomeWork_5_1.Services
             _options = options.Value;
         }
 
-        public  async Task<UsersListResponse> GetUsersList()
+        public  async Task<PageResponse<UserDto>> GetUsersList()
         {
-            var services = new ServiceCollection();
-            services.AddHttpClient();
-            var serviceprovider = services.BuildServiceProvider();
-            var httpClientFactoryr = serviceprovider.GetService<IHttpClientFactory>();
-            var httpClient = httpClientFactoryr.CreateClient();
+            var result = await _httpClientService.SendAsync<PageResponse<UserDto>, object>($"{_options.Host}{_userApi}", HttpMethod.Get);
 
-            var response = await httpClient.GetAsync("https://reqres.in/api/users?page=2");
+            if (result?.Data != null)
+            {
+                _logger.LogInformation($"Users list was found {result.Data}");
+            }
 
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<UsersListResponse>(content);
-                return result;
-            }
-            else if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                _logger.LogError($"Error");
-                return null;
-            }
-            else
-            {
-                throw new Exception($"Failed to get users list: {response.StatusCode}");
-            }
+            return result;
         }
 
         public async Task<UserDto> GetUserById(int id)

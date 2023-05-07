@@ -1,70 +1,58 @@
-﻿using CodeHomeWork_5_1.Dtos.Responses;
+﻿using CodeHomeWork_5_1.Config;
+using CodeHomeWork_5_1.Dtos;
+using CodeHomeWork_5_1.Dtos.Requests;
+using CodeHomeWork_5_1.Dtos.Responses;
 using CodeHomeWork_5_1.Services.Abstractions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace CodeHomeWork_5_1.Services
 {
     public class LogingService : ILogingService
     {
-        private readonly ILogger<UserService> _logger;
-        private readonly string _registerUrl = "https://reqres.in/api/login";
-        private static readonly HttpClient _client = new HttpClient();
+        private readonly IInternalHttpClientService _httpClientService;
+        private readonly ILogger<LogingService> _logger;
+        private readonly ApiOption _options;
+        private readonly string _registerApi = "api/login/";
 
-        public LogingService(ILogger<UserService> logger)
+        public LogingService(
+            IInternalHttpClientService httpClientService,
+            IOptions<ApiOption> options,
+            ILogger<LogingService> logger)
         {
+            _httpClientService = httpClientService;
             _logger = logger;
+            _options = options.Value;
         }
 
         public async Task<LoginResponse> LoginUser(string email, string password)
         {
-            var content = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("email", email),
-                new KeyValuePair<string, string>("password", password)
-            });
+            var result = await _httpClientService.SendAsync<LoginResponse, LoginRequest>(
+                 $"{_options.Host}{_registerApi}",
+                 HttpMethod.Post,
+                 new LoginRequest()
+                 {
+                     Email = email,
+                     Password = password
+                 });
 
-            var response = await _client.PostAsync(_registerUrl, content);
-
-            if (response.IsSuccessStatusCode)
+            if (result?.Token != null)
             {
-                _logger.LogInformation($"Login successful");
+                _logger.LogInformation($"Login was successful {result.Token}");
             }
-            else
+            else 
             {
-                _logger.LogError($"Login failed with status code {response.StatusCode}");
-            }
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var registerResponse = JsonConvert.DeserializeObject<LoginResponse>(responseContent);
-
-            return registerResponse;
-        }
-
-        public async Task<string> RegisterUserMissPassword(string email)
-        {
-            var content = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("email", email),
-            });
-
-            var response = await _client.PostAsync(_registerUrl, content);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                _logger.LogError($"Error {response.StatusCode}");
-                return error;
+                _logger.LogError($"Error loging ");
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            return responseContent;
+            return result;
         }
     }
 }

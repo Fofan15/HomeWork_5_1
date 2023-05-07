@@ -15,45 +15,30 @@ namespace CodeHomeWork_5_1.Services
     public class ResourceService : IResourceService
     {
         private readonly IInternalHttpClientService _httpClientService;
-        private readonly ILogger<UserService> _logger;
+        private readonly ILogger<ResourceService> _logger;
         private readonly ApiOption _options;
         private readonly string _resourceApi = "api/unknown/";
 
         public ResourceService(
             IInternalHttpClientService httpClientService,
             IOptions<ApiOption> options,
-            ILogger<UserService> logger)
+            ILogger<ResourceService> logger)
         {
             _httpClientService = httpClientService;
             _logger = logger;
             _options = options.Value;
         }
 
-        public async Task<ResourceListResponse> GetResourceList()
+        public async Task<PageResponse<ResourceDto>> GetResourceList()
         {
-            var services = new ServiceCollection();
-            services.AddHttpClient();
-            var serviceprovider = services.BuildServiceProvider();
-            var httpClientFactoryr = serviceprovider.GetService<IHttpClientFactory>();
-            var httpClient = httpClientFactoryr.CreateClient();
+            var result = await _httpClientService.SendAsync<PageResponse<ResourceDto>, object>($"{_options.Host}{_resourceApi}", HttpMethod.Get);
 
-            var response = await httpClient.GetAsync("https://reqres.in/api/unknown");
+            if (result?.Data != null)
+            {
+                _logger.LogInformation($"Resource list was found {result.Data}");
+            }
 
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                var result = JsonConvert.DeserializeObject<ResourceListResponse>(content);
-                return result;
-            }
-            else if (response.StatusCode == HttpStatusCode.NotFound)
-            {
-                _logger.LogError($"Error");
-                return null;
-            }
-            else
-            {
-                throw new Exception($"Failed to get resource list: {response.StatusCode}");
-            }
+            return result;
         }
 
         public async Task<ResourceDto> GetResourceById(int id)

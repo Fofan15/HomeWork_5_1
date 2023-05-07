@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CodeHomeWork_5_1.Dtos.Responses
 {
-    public class LoginResponse
+    public class LoginResponse : ErrorResponse
     {
         [JsonProperty("token")]
         public string Token { get; set; }

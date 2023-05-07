@@ -15,59 +15,48 @@ namespace CodeHomeWork_5_1.Services
 {
     public class RegisterService : IRegisterService
     {
-        private readonly ILogger<UserService> _logger;
-        private readonly string _registerUrl = "https://reqres.in/api/register";
-        private static readonly HttpClient _client = new HttpClient();
+        private readonly IInternalHttpClientService _httpClientService;
+        private readonly ILogger<RegisterService> _logger;
+        private readonly ApiOption _options;
+        private readonly string _registerApi = "api/register/";
 
-        public RegisterService( ILogger<UserService> logger)
+        public RegisterService(
+            IInternalHttpClientService httpClientService,
+            IOptions<ApiOption> options,
+            ILogger<RegisterService> logger)
         {
+            _httpClientService = httpClientService;
             _logger = logger;
+            _options = options.Value;
         }
 
         public async Task<RegisterResponse> RegisterUser(string email, string password)
         {
-            var content = new FormUrlEncodedContent(new[] 
-            {
-                new KeyValuePair<string, string>("email", email),
-                new KeyValuePair<string, string>("password", password)
-            });
+            var content = new FormUrlEncodedContent(new[]
+                     {
+                         new KeyValuePair<string, string>("email", email),
+                         new KeyValuePair<string, string>("password", password)
+                     });
 
-            var response = await _client.PostAsync(_registerUrl, content);
+            var result = await _httpClientService.SendAsync<RegisterResponse, RegisterRequest>(
+                 $"{_options.Host}{_registerApi}",
+                 HttpMethod.Post,
+                 new RegisterRequest()
+                 {
+                     Email = email,
+                     Password = password
+                 });
 
-            if (response.IsSuccessStatusCode)
+            if (result?.Token != null)
             {
-                _logger.LogInformation($"Registration successful"); 
+                _logger.LogInformation($"Registration successful with id: {result.Id} token: {result.Token}");
             }
             else
             {
-                _logger.LogError($"Registration failed with status code {response.StatusCode}");
+                _logger.LogError($"Registration failed");
             }
 
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var registerResponse = JsonConvert.DeserializeObject<RegisterResponse>(responseContent);
-
-            return registerResponse;
-        }
-
-        public async Task<string> RegisterUserMissPassword(string email)
-        {
-            var content = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("email", email),   
-            });
-
-            var response = await _client.PostAsync(_registerUrl, content);
-
-            if (!response.IsSuccessStatusCode) 
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                _logger.LogError($"Error {response.StatusCode}");
-                return error;
-            }
-
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            return responseContent;
+            return result;
         }
     }
 }
