@@ -20,7 +20,7 @@ namespace CodeHomeWork_5_1.Services
         private readonly IInternalHttpClientService _httpClientService;
         private readonly ILogger<LogingService> _logger;
         private readonly ApiOption _options;
-        private readonly string _registerApi = "api/login/";
+        private readonly string _loginApi = "api/login/";
 
         public LogingService(
             IInternalHttpClientService httpClientService,
@@ -35,7 +35,7 @@ namespace CodeHomeWork_5_1.Services
         public async Task<LoginResponse> LoginUser(string email, string password)
         {
             var result = await _httpClientService.SendAsync<LoginResponse, LoginRequest>(
-                 $"{_options.Host}{_registerApi}",
+                 $"{_options.Host}{_loginApi}",
                  HttpMethod.Post,
                  new LoginRequest()
                  {
